@@ -46,10 +46,10 @@ static void flashScreen(void)
 int __attribute__ ((section (".text.a11.entry"))) _main()
 {
 	svc_sleepThread(0x10000000);
-	
+
 	// Get framebuffer addresses
 	uint32_t regs[10];
-	
+
 	regs[0] = 0xDEADBABE;
 	regs[1] = 0xBABEDADA;
 
@@ -59,7 +59,7 @@ int __attribute__ ((section (".text.a11.entry"))) _main()
 	_GSPGPU_ReadHWRegs(gspHandle, 0x400568, &regs[4+2], 8); // framebuffer 1 bottom & framebuffer 2 bottom
 	_GSPGPU_ReadHWRegs(gspHandle, 0x400478, &regs[6+2], 4); // framebuffer select top
 	_GSPGPU_ReadHWRegs(gspHandle, 0x400578, &regs[7+2], 4); // framebuffer select bottom
-	
+
 	//patch gsp event handler addr to kill gsp thread ASAP, PA 0x267CF418
 	*((u32*)(0x003F8418+0x10+4*0x4))=0x002CA520; //svc 0x9 addr
 	flashScreen();
@@ -72,7 +72,7 @@ int __attribute__ ((section (".text.a11.entry"))) _main()
 	unsigned int readBytes;
 	_memset(&file, 0, sizeof(file));
 	IFile_Open(&file, L"dmc:/arm9.bin", 1);
-	
+
 	const uint32_t block_size = 0x10000;
 	for(u32 i = 0; i < 0x20000u; i += block_size)
 	{
@@ -87,7 +87,7 @@ int __attribute__ ((section (".text.a11.entry"))) _main()
 	// Copy it twice to make it easier to find and avoid catching the wrong one
 	buffer[0] = MAGIC_WORD;
 	buffer[1] = MAGIC_WORD;
-	
+
 	if(regs[6+2])
 	{
 		buffer[2] = regs[0+2];
@@ -98,7 +98,7 @@ int __attribute__ ((section (".text.a11.entry"))) _main()
 		buffer[2] = regs[1+2];
 		buffer[3] = regs[3+2];
 	}
-	
+
 	if(regs[7+2])
 		buffer[4] = regs[4+2];
 	else
@@ -107,24 +107,38 @@ int __attribute__ ((section (".text.a11.entry"))) _main()
 	// Grab access to PS
 	Handle port;
 	svc_connectToPort(&port, "srv:pm");
-	
+
 	srv_RegisterClient(&port);
-	
+
 	u32 proc = 0;
 	svc_getProcessId(&proc, 0xFFFF8001);
-	
+
 	srvUnregisterProcess(&port, proc);
-	
+
 	srvRegisterProcess(&port, proc, 0x18, (const void*)&access_bin[0]);
-	
+
 	Handle ps_handle = 0;
 	srv_getServiceHandle(&port, &ps_handle, "ps:ps");
-	
+
 	svc_sleepThread(0x10000000);
 
-	// Perform the exploit
+	// Perform the exploit (and grant us access to all svcs in the process)
 	Result res = PS_VerifyRsaSha256(&ps_handle);
 
+	// Fills the bottom buffer with a random pattern
+	void *src = (void *)0x18000000;
+	for (int i = 0; i < 3; i++) {  // Do it 3 times to be safe
+		GSPGPU_FlushDataCache(src, 0x00038400);
+		GX_SetTextureCopy(src, (void *)0x1F48F000, 0x00038400, 0, 0, 0, 0, 8);
+		svc_sleepThread(0x400000LL);
+		GSPGPU_FlushDataCache(src, 0x00038400);
+		GX_SetTextureCopy(src, (void *)0x1F4C7800, 0x00038400, 0, 0, 0, 0, 8);
+		svc_sleepThread(0x400000LL);
+	}
+
+	//Firmlaunch
+	svc_kernelSetState(0, 0, 2, 0);
+	
 	// We do not expect reaching here
 	return 0;
 }
