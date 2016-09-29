@@ -2,11 +2,11 @@ export PATH	:=	$(DEVKITARM)/bin:$(PATH)
 
 CC=arm-none-eabi-gcc
 CP=arm-none-eabi-g++
-OC=arm-none-eabi-objcopy 
+OC=arm-none-eabi-objcopy
 LD=arm-none-eabi-ld
 AM=armips
 
-CFLAGS=-std=gnu11 -Os -g -mword-relocations -fomit-frame-pointer -ffast-math -fshort-wchar -Wall -Wextra -Wpedantic -pedantic -Wall -Wextra -Wcast-align -Wcast-qual -Wdisabled-optimization -Wformat=2 -Winit-self -Wlogical-op -Wmissing-declarations -Wmissing-include-dirs -Wredundant-decls -Wshadow -Wsign-conversion -Wstrict-overflow=5 -Wswitch-default -Wundef -Wno-unused
+CFLAGS=-std=gnu11 -Os -g -mword-relocations -fomit-frame-pointer -ffast-math -fshort-wchar -Wall -Wextra -Wpedantic -pedantic -Wall -Wextra -Wcast-align -Wcast-qual -Wdisabled-optimization -Wformat=2 -Winit-self -Wlogical-op -Wmissing-include-dirs -Wredundant-decls -Wshadow -Wsign-conversion -Wstrict-overflow=5 -Wswitch-default -Wundef -Wno-unused
 C9FLAGS=-mcpu=arm946e-s -march=armv5te -mlittle-endian
 C11FLAGS=-mcpu=mpcore -mlittle-endian
 LDFLAGS=
@@ -56,4 +56,4 @@ ${OUT_DIR}:
 	mkdir -p ${OUT_DIR}
 
 clean:
-	rm -rf bin/*.elf bin/*.bin obj/*
+	rm -rf bin obj
