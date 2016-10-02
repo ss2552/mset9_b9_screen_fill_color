@@ -25,12 +25,12 @@ _arm11Hook:
 	addne r0, #4		@ control variable for the current core
 	eor r2, r0, #4		@ control variable for the other core
 
+	bl flushCaches
+
 	ldr r5, =0x12345678 @ magic control value (to signal we're waiting / detect when to handle interrupt requests)
 	str r0, [r0]		@ overwrite the control variable for the current core (barrier)
 
-	mov r1, #0
-	mcr p15, 0, r1, c7, c14, 0	@ flush caches
-	mcr p15, 0, r1, c7, c10, 4
+	bl flushCaches
 
 	ldr r3, [r2]
 	cmp r3, r2
@@ -54,3 +54,13 @@ _arm11Hook:
 		cmp r3, r5
 		movne pc, r3
 		b _waitLoop
+
+.global flushCaches
+.type   flushCaches, %function
+flushCaches:
+	mov r1, #0
+	mcr p15, 0, r1, c7, c14, 0	@ "Clean and Invalidate Entire Data Cache"
+	mcr p15, 0, r1, c7, c10, 5	@ "Data Memory Barrier"
+	mcr p15, 0, r1, c7, c5,  0	@ "Invalidate Entire Instruction Cache. Also flushes the branch target cache"
+	mcr p15, 0, r1, c7, c10, 4	@ "Data Synchronization Barrier"
+	bx lr
