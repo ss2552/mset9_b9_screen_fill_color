@@ -15,8 +15,8 @@ arm11Hook:
 	b _arm11Hook
 _arm11Hook:
 	clrex
-	push {r0-r5, lr}
 	cps #0x13			@ switch to supervisor mode
+	push {r0-r5, lr}
 
 	mrc p15, 0, r0, c0, c0, 5
 	tst r0, #3			@ get core ID
