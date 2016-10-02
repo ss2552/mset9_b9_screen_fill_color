@@ -1,59 +1,68 @@
-export PATH	:=	$(DEVKITARM)/bin:$(PATH)
+rwildcard = $(foreach d, $(wildcard $1*), $(filter $(subst *, %, $2), $d) $(call rwildcard, $d/, $2))
 
-CC=arm-none-eabi-gcc
-CP=arm-none-eabi-g++
-OC=arm-none-eabi-objcopy
-LD=arm-none-eabi-ld
-AM=armips
+ifeq ($(strip $(DEVKITARM)),)
+$(error "Please set DEVKITARM in your environment. export DEVKITARM=<path to>devkitARM")
+endif
 
-CFLAGS=-std=gnu11 -Os -g -mword-relocations -fomit-frame-pointer -ffast-math -fshort-wchar -Wall -Wextra -Wpedantic -pedantic -Wall -Wextra -Wcast-align -Wcast-qual -Wdisabled-optimization -Wformat=2 -Winit-self -Wlogical-op -Wmissing-include-dirs -Wredundant-decls -Wshadow -Wsign-conversion -Wstrict-overflow=5 -Wswitch-default -Wundef -Wno-unused
-C9FLAGS=-mcpu=arm946e-s -march=armv5te -mlittle-endian
-C11FLAGS=-mcpu=mpcore -mlittle-endian
-LDFLAGS=
-OCFLAGS=--set-section-flags .bss=alloc,load,contents
+include $(DEVKITARM)/3ds_rules
 
-OUT_DIR=obj/arm11 bin
+CC := arm-none-eabi-gcc
+AS := arm-none-eabi-as
+LD := arm-none-eabi-ld
+OC := arm-none-eabi-objcopy
 
-ARM11_OBJS=$(patsubst %.c, obj/%.o, $(wildcard arm11/*.c))
-ARM11_OBJS+=$(patsubst %.s, obj/%.o, $(wildcard arm11/*.s))
-ARM11_OBJS+=$(patsubst %.S, obj/%.o, $(wildcard arm11/*.S))
 
-.PHONY: clean
+dir_source := source
+dir_arm9 := arm9
+dir_arm11_hook := arm11_hook
+dir_build := build
+dir_out := bin
 
+ASFLAGS := -mcpu=mpcore -mlittle-endian
+CFLAGS := -Wall -Wextra -MMD -MP -marm $(ASFLAGS) -fno-builtin -fshort-wchar -std=c11 -Wno-main -Os -g -flto -ffast-math
+LDFLAGS := -nostartfiles
+OCFLAGS := --set-section-flags .bss=alloc,load,contents
+
+objects = $(patsubst $(dir_source)/%.s, $(dir_build)/%.o, \
+          $(patsubst $(dir_source)/%.c, $(dir_build)/%.o, \
+          $(call rwildcard, $(dir_source), *.s *.c)))
+
+.PHONY: all
 all: bin/arm11.bin
 
-bin/arm11.bin: $(ARM11_OBJS) | dirs
-	$(LD) -T arm11.ld $(ARM11_OBJS) $(LDFLAGS) -o $@.elf
-	$(OC) $(OCFLAGS) -O binary $@.elf $@
-
-obj/%.11.o: %.11.c | dirs
-	@echo Compiling $<
-	$(CC) -c $(CFLAGS) $(C11FLAGS) $< -o $@
-
-obj/%.11.o: %.11.s | dirs
-	@echo Compiling $<
-	$(CC) -c $(CFLAGS) $(C11FLAGS) -fno-toplevel-reorder $< -o $@
-
-obj/%.11.o: %.11.S | dirs
-	@echo Compiling $<
-	$(CC) -c $(CFLAGS) $(C11FLAGS) -fno-toplevel-reorder $< -o $@
-
-obj/%.o: %.c | dirs
-	@echo Compiling $<
-	$(CC) -c $(CFLAGS) $(C9FLAGS) $< -o $@
-
-obj/%.o: %.s | dirs
-	@echo Compiling $<
-	$(CC) -c $(CFLAGS) $(C9FLAGS) $< -o $@
-
-obj/%.o: %.S | dirs
-	@echo Compiling $<
-	$(CC) -c $(CFLAGS) $(C9FLAGS) $< -o $@
-
-dirs: ${OUT_DIR}
-
-${OUT_DIR}:
-	mkdir -p ${OUT_DIR}
-
+.PHONY: clean
 clean:
-	rm -rf bin obj
+	@$(MAKE) -C $(dir_arm11_hook) clean
+	@$(MAKE) -C $(dir_arm9) clean
+	@rm -rf $(dir_out) $(dir_build)
+
+.PRECIOUS: $(dir_build)/%.bin
+
+$(dir_out) $(dir_build):
+	@mkdir -p "$@"
+
+$(dir_out)/arm11.bin: $(dir_build)/main.bin $(dir_out)
+	@cp -a $(dir_build)/main.bin $@
+
+$(dir_build)/main.bin: $(dir_build)/main.elf
+	$(OC) -S -O binary $< $@
+
+$(dir_build)/main.elf: $(bundled) $(objects)
+	$(LINK.o) -T linker.ld $(OUTPUT_OPTION) $^
+
+$(dir_build)/arm11_hook.bin: $(dir_arm11_hook) $(dir_build)
+	@$(MAKE) -C $<
+
+$(dir_build)/arm9.bin: $(dir_arm9) $(dir_build)/arm11_hook.bin $(dir_build)
+	@$(MAKE) -C $<
+
+$(dir_build)/lib.o: CFLAGS += -O3
+
+$(dir_build)/%.o: $(dir_source)/%.c $(dir_build)/arm9.bin
+	@mkdir -p "$(@D)"
+	$(COMPILE.c) $(OUTPUT_OPTION) $<
+
+$(dir_build)/%.o: $(dir_source)/%.s
+	@mkdir -p "$(@D)"
+	$(COMPILE.s) $(OUTPUT_OPTION) $<
+include $(call rwildcard, $(dir_build), *.d)

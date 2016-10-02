@@ -23,8 +23,3 @@ svc_getProcessId:
 	ldr r3, [sp], #4
 	str r1, [r3]
 	bx  lr
-
-.global svc_kernelSetState
-svc_kernelSetState:
-	svc 0x7C
-	bx lr

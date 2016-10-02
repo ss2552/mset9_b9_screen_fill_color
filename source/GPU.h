@@ -1,5 +1,4 @@
-#ifndef GPU_11_H_
-#define GPU_11_H_
+#pragma once
 
 #include "types.h"
 
@@ -13,7 +12,3 @@ extern const GSPGPU_FlushDataCache_f GSPGPU_FlushDataCache;
 Result _GSPGPU_ReadHWRegs(uint32_t* handle, u32 regAddr, u32* data, u8 size);
 
 extern u32* const gspHandle;
-
-
-#endif//GPU_11_H_
-

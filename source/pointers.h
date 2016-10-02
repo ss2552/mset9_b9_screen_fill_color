@@ -1,5 +1,4 @@
-#ifndef POINTERS_11_H_
-#define POINTERS_11_H_
+#pragma once
 
 #if !defined (FW_MAJOR) || !defined(FW_MINOR) || ((FW_MAJOR == 21) && FW_MINOR == 1)
 
@@ -14,7 +13,7 @@
 #define IFILE_WRITE_ADR 0x00310190
 
 #define PS_VERIFYRSASHA256_BUFFER_SIZE 0xD9B8
-#define UNKNOWN_POINTER_USED_BY_RSA_EXPLOIT 0x080C2340
+#define ARM9_EXPLOIT_PAYLOAD_BASE_ADDRESS 0x080C2340
 
 #define BUFFER_ADR ((void*)0x18400000) // FIXME is this 2.1 specific?
 #define BUFFER_ADR_SIZE 0x20000
@@ -31,12 +30,9 @@
 
 #endif// FW > 2
 
-// The function of the following values is unknown
+// Base addresses for the arm9 exploit payload
 //*ptr++ = 0x080C3EE0; //4.5
 //*ptr++ = 0x080C4420; //3.x
 //*ptr++ = 0x080C2520; //2.2
 //*ptr++ = 0x080B9620; //1.1
 //*ptr++ = 0x080B95C0; //1.0
-
-#endif//POINTERS_11_H_
-

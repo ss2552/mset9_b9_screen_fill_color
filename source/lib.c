@@ -1,4 +1,4 @@
-#include "lib.11.h"
+#include "lib.h"
 
 int _strlen(char* str)
 {
@@ -19,4 +19,3 @@ void _memset(void* addr, char val, unsigned int size)
 	while(size--)
 		*(caddr++) = val;
 }
-

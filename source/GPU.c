@@ -1,7 +1,7 @@
-#include "GPU.11.h"
-#include "pointers.11.h"
-#include "3ds_utils.11.h"
-#include "svc.11.h"
+#include "GPU.h"
+#include "pointers.h"
+#include "utils.h"
+#include "svc.h"
 
 const GX_SetTextureCopy_f GX_SetTextureCopy = (GX_SetTextureCopy_f) GX_SETTEXTURECOPY_ADR;
 const GSPGPU_FlushDataCache_f GSPGPU_FlushDataCache = (GSPGPU_FlushDataCache_f) GSPGPU_FLUSHDATACACHE_ADR;
@@ -23,4 +23,3 @@ Result _GSPGPU_ReadHWRegs(uint32_t* handle, u32 regAddr, u32* data, u8 size)
 
 	return (Result)cmdbuf[1];
 }
-

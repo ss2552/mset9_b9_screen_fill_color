@@ -1,23 +1,17 @@
-#include "GPU.11.h"
-#include "IFile.11.h"
-#include "pointers.11.h"
-#include "svc.11.h"
-#include "constants.h"
-#include "lib.11.h"
-#include "3ds_utils.11.h"
+#include "GPU.h"
+#include "IFile.h"
+#include "pointers.h"
+#include "svc.h"
+#include "lib.h"
+#include "utils.h"
 #include "types.h"
-
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <assert.h>
 
 //FIXME do we need these constants?
 #define SPIDER_DATARO_START 0x00359000 //FIXME is this 2.1 specific?
 #define SPIDER_DATABSS_START 0x003C7000 //FIXME is this 2.1 specific?
 
 //FIXME what is this for?
-static const u8 __attribute__ ((section (".rodata"))) access_bin[] =
+static const u8 access_bin[] =
 {
 	0x41, 0x50, 0x54, 0x3A, 0x55, 0x00, 0x00, 0x00, 0x79, 0x32, 0x72, 0x3A, 0x75, 0x00, 0x00, 0x00,
 	0x67, 0x73, 0x70, 0x3A, 0x3A, 0x47, 0x70, 0x75, 0x6E, 0x64, 0x6D, 0x3A, 0x75, 0x00, 0x00, 0x00,
@@ -43,7 +37,7 @@ static void flashScreen(void)
 	}
 }
 
-int __attribute__ ((section (".text.a11.entry"))) _main()
+void main(void)
 {
 	svc_sleepThread(0x10000000);
 
@@ -83,26 +77,23 @@ int __attribute__ ((section (".text.a11.entry"))) _main()
 			break;
 	}
 
-	// Copy the magic to 0x18410000
-	// Copy it twice to make it easier to find and avoid catching the wrong one
-	buffer[0] = MAGIC_WORD;
-	buffer[1] = MAGIC_WORD;
+	u32 fb[3] = {0};
 
 	if(regs[6+2])
 	{
-		buffer[2] = regs[0+2];
-		buffer[3] = regs[2+2];
+		fb[0] = regs[0+2];
+	 	fb[1] = regs[2+2];
 	}
 	else
 	{
-		buffer[2] = regs[1+2];
-		buffer[3] = regs[3+2];
+		fb[0] = regs[1+2];
+		fb[1] = regs[3+2];
 	}
 
 	if(regs[7+2])
-		buffer[4] = regs[4+2];
+		fb[2] = regs[4+2];
 	else
-		buffer[4] = regs[5+2];
+		fb[2] = regs[5+2];
 
 	// Grab access to PS
 	Handle port;
@@ -123,22 +114,5 @@ int __attribute__ ((section (".text.a11.entry"))) _main()
 	svc_sleepThread(0x10000000);
 
 	// Perform the exploit (and grant us access to all svcs in the process)
-	Result res = PS_VerifyRsaSha256(&ps_handle);
-
-	// Fills the bottom buffer with a random pattern
-	void *src = (void *)0x18000000;
-	for (int i = 0; i < 3; i++) {  // Do it 3 times to be safe
-		GSPGPU_FlushDataCache(src, 0x00038400);
-		GX_SetTextureCopy(src, (void *)0x1F48F000, 0x00038400, 0, 0, 0, 0, 8);
-		svc_sleepThread(0x400000LL);
-		GSPGPU_FlushDataCache(src, 0x00038400);
-		GX_SetTextureCopy(src, (void *)0x1F4C7800, 0x00038400, 0, 0, 0, 0, 8);
-		svc_sleepThread(0x400000LL);
-	}
-
-	//Firmlaunch
-	svc_kernelSetState(0, 0, 2, 0);
-	
-	// We do not expect reaching here
-	return 0;
+	PS_VerifyRsaSha256(&ps_handle, fb);
 }

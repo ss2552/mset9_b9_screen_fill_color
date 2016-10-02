@@ -1,5 +1,4 @@
-#ifndef IFILE_11_H_
-#define IFILE_11_H_
+ #pragma once
 
 #include "types.h"
 #include <assert.h>
@@ -21,6 +20,3 @@ const IFile_Open_f IFile_Open;
 const IFile_Close_f IFile_Close;
 const IFile_Read_f IFile_Read;
 const IFile_Write_f IFile_Write;
-
-#endif//IFILE_11_H_
-
