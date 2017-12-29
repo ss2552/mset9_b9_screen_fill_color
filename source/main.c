@@ -56,7 +56,6 @@ void main(void)
 
 	//patch gsp event handler addr to kill gsp thread ASAP, PA 0x267CF418
 	*((u32*)(0x003F8418+0x10+4*0x4))=0x002CA520; //svc 0x9 addr
-	flashScreen();
 	svc_sleepThread(0x10000000);
 
 	// Read the main payload to 0x17F00000(0x23F00000 pa)
@@ -108,11 +107,17 @@ void main(void)
 
 	srvRegisterProcess(&port, proc, 0x18, (const void*)&access_bin[0]);
 
-	Handle ps_handle = 0;
+	Handle ps_handle = 0, pmapp_handle = 0;
 	srv_getServiceHandle(&port, &ps_handle, "ps:ps");
+	srv_getServiceHandle(&port, &pmapp_handle, "pm:app");
 
 	svc_sleepThread(0x10000000);
 
-	// Perform the exploit (and grant us access to all svcs in the process)
+	// Perform the exploit
+	u32 dummy = 0;
 	PS_VerifyRsaSha256(&ps_handle, fb);
+	PMAPP_LaunchFirm(&pmapp_handle, 2, &dummy, 4);
+	//flashScreen();
+
+	while(1);
 }

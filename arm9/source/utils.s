@@ -36,8 +36,9 @@ finalJump:
 	ldr r0, =0x42078	@ alt vector select, enable itcm
 	mcr p15, 0, r0, c1, c0, 0
 
-	ldr r0, =#0x23f00000
-	bx r0
+	ldr r2, =#0x23f00000
+	bx r2
 
 .global fb
+.section .rodata
 fb: .word 0xdeadbabe, 0, 0

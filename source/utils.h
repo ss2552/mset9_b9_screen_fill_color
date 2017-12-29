@@ -29,3 +29,6 @@ Result srv_getServiceHandle(Handle* handleptr, Handle* out, char* server);
 Result PS_VerifyRsaSha256(Handle *handle, u32 *fb); //Exploit
 
 extern u32 *work_buffer;
+
+Result PMAPP_PrepareForReboot(Handle *handle, u64 timeout);
+Result PMAPP_LaunchFirm(Handle *handle, u32 firmTidLow, const void *firmParameters, u32 firmParametersSize);

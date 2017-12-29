@@ -127,3 +127,37 @@ Result PS_VerifyRsaSha256(Handle *handle, u32 *fb)
 	//We do not expect to return from the syncRequest
 	return (Result)cmdbuf[1];
 }
+
+Result PMAPP_PrepareForReboot(Handle *handle, u64 timeout)
+{
+	Result rc = 0;
+
+	u32 *cmdbuf = getThreadCommandBuffer();
+
+	cmdbuf[0] = 0x00060082;
+	cmdbuf[1] = (u32)timeout;
+	cmdbuf[2] = (u32)(timeout >> 32);
+	cmdbuf[3] = 0x20;
+	cmdbuf[4] = 0;
+
+	if((rc = svc_sendSyncRequest(*handle))) return rc;
+
+	return (Result)cmdbuf[1];
+}
+
+Result PMAPP_LaunchFirm(Handle *handle, u32 firmTidLow, const void *firmParameters, u32 firmParametersSize)
+{
+	Result rc = 0;
+
+	u32 *cmdbuf = getThreadCommandBuffer();
+
+	cmdbuf[0] = 0x00020082;
+	cmdbuf[1] = firmTidLow;
+	cmdbuf[2] = firmParametersSize;
+	cmdbuf[3] = (firmParametersSize << 4) | 0xA;
+	cmdbuf[4] = (u32)firmParameters;
+
+	if((rc = svc_sendSyncRequest(*handle))) return rc;
+
+	return (Result)cmdbuf[1];
+}
