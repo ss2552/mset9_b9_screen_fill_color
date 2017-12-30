@@ -4,35 +4,40 @@
 #include "memory.h"
 #include "arm11_hook.h"
 
+#define CFG11_SHAREDWRAM_32K_DATA(i)	(*(vu8 *)(0x10140000 + i))
+#define CFG11_SHAREDWRAM_32K_CODE(i)	(*(vu8 *)(0x10140008 + i))
+#define CFG11_DSP_CNT					(*(vu8 *)0x10141230)
+
 static void resetDSPAndSharedWRAMConfig(void)
 {
-	*(vu8 *)0x10141230 = 2; // PDN_DSP_CNT
+	CFG11_DSP_CNT = 2; // PDN_DSP_CNT
 	for(volatile int i = 0; i < 10; i++);
 
-	*(vu8 *)0x10141230 = 3;
+	CFG11_DSP_CNT = 3;
 	for(volatile int i = 0; i < 10; i++);
 
 	for(int i = 0; i < 8; i++)
-		*(vu8 *)(0x10140000 + i) = i << 2; // PDN_SHAREDWRAM_32K_DATA(i): disabled, master = arm9
+		CFG11_SHAREDWRAM_32K_DATA(i) = i << 2; // disabled, master = arm9
 
 	for(int i = 0; i < 8; i++)
-		*(vu8 *)(0x10140008 + i) = i << 2; // PDN_SHAREDWRAM_32K_CODE(i): disabled, master = arm9
+		CFG11_SHAREDWRAM_32K_CODE(i) = i << 2; // disabled, master = arm9
 
 	for(int i = 0; i < 8; i++)
-		*(vu8 *)(0x10140000 + i) = 0x80 | (i << 2); // PDN_SHAREDWRAM_32K_DATA(i): enabled, master = arm9
+		CFG11_SHAREDWRAM_32K_DATA(i) = 0x80 | (i << 2); // enabled, master = arm9
 
 	for(int i = 0; i < 8; i++)
-		*(vu8 *)(0x10140008 + i) = 0x80 | (i << 2); // PDN_SHAREDWRAM_32K_CODE(i): enabled, master = arm9
+		CFG11_SHAREDWRAM_32K_CODE(i) = 0x80 | (i << 2); // enabled, master = arm9
 }
 
 static void doFirmlaunch(void)
 {
 
 	while(PXIReceiveWord() != 0x44836);
-	resetDSPAndSharedWRAMConfig();
 	PXISendWord(0x964536);
 	while(PXIReceiveWord() != 0x44837);
-	PXIReceiveWord(); PXIReceiveWord(); // High/Low FIRM titleID
+	PXIReceiveWord(); // High FIRM titleID
+	PXIReceiveWord(); // Low FIRM titleID
+	resetDSPAndSharedWRAMConfig();
 	while(PXIReceiveWord() != 0x44846);
 
 	finalJump();
@@ -48,6 +53,5 @@ void main(void)
 	*(vu32 *)0x1FFF4018 = 0xEA0002CE; // Point the ARM11 IRQ vector to our code
 	while(PXIReceiveByte() != 0xCC);
 	PXISendByte(0xDD);
-
 	doFirmlaunch();
 }

@@ -1,11 +1,11 @@
-ENTRY(arm11Hook)
+ENTRY(_start)
 SECTIONS
 {
-    . = 0x1FFF4B40;
-    .text.start : { *(.text.start) }
-    .text : { *(.text) }
-    .data : { *(.data) }
-    .bss : { *(.bss COMMON) }
-    .rodata : { *(.rodata) }
+    . = 0;
+
+    .text       : ALIGN(4) { *(.text.start) *(.text*); . = ALIGN(4); }
+    .rodata     : ALIGN(4) { *(.rodata*); . = ALIGN(4); }
+    .data       : ALIGN(4) { *(.data*); . = ALIGN(8); . = ALIGN(8); __bss_start = .; *(.bss* COMMON); . = ALIGN(8); __bss_end = .;}
+
     . = ALIGN(4);
 }
