@@ -25,17 +25,7 @@ static void resetDSPAndSharedWRAMConfig(void)
 		*(vu8 *)(0x10140008 + i) = 0x80 | (i << 2); // PDN_SHAREDWRAM_32K_CODE(i): enabled, master = arm9
 }
 
-void sendFakePsResponse(void)
-{
-	PXISendByte(8); // pxi:ps9
-	PXITriggerSync11IRQ();
-	PXISendWord(0x20041);
-	PXISendWord(0); // no error
-	PXISendWord(4); // empty pxi buffer
-	//*(vu32 *)1114 = 55555;
-}
-
-void doFirmlaunch(void)
+static void doFirmlaunch(void)
 {
 
 	while(PXIReceiveWord() != 0x44836);

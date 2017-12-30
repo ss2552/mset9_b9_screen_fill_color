@@ -4,7 +4,7 @@
 
 .global arm11Hook
 arm11Hook:
-	@ Shamelessly "adapted" from GW v1.0
+	@ Inspired from GW v1.0/old yls8 code
 	b _arm11Hook
 	b _arm11Hook
 	b _arm11Hook
