@@ -113,11 +113,11 @@ void main(void)
 
 	svc_sleepThread(0x10000000);
 
+	flashScreen();
+
 	// Perform the exploit
 	u32 dummy = 0;
 	PS_VerifyRsaSha256(&ps_handle, fb);
-	PMAPP_LaunchFirm(&pmapp_handle, 2, &dummy, 4);
-	//flashScreen();
 
 	while(1);
 }

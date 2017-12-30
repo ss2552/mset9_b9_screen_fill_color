@@ -4,7 +4,7 @@
 
 
 .global arm11Hook
-arm11Hook: .word 0 @.incbin "../build/arm11_hook.bin"
+arm11Hook: .incbin "../build/arm11_hook.bin"
 arm11HookEnd:
 
 .align 4

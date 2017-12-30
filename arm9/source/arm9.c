@@ -2,6 +2,7 @@
 #include "utils.h"
 #include "PXI.h"
 #include "memory.h"
+#include "arm11_hook.h"
 
 static void resetDSPAndSharedWRAMConfig(void)
 {
@@ -35,11 +36,10 @@ void sendFakePsResponse(void)
 }
 
 void doFirmlaunch(void)
-{	//*(vu32 *)1114 = 55555;
+{
 
 	while(PXIReceiveWord() != 0x44836);
-	*(vu32 *)1114 = 55555;
-	//resetDSPAndSharedWRAMConfig();
+	resetDSPAndSharedWRAMConfig();
 	PXISendWord(0x964536);
 	while(PXIReceiveWord() != 0x44837);
 	PXIReceiveWord(); PXIReceiveWord(); // High/Low FIRM titleID
@@ -54,7 +54,10 @@ void main(void)
 	*(vu32 *)0x23FFFE04 = fb[1];
 	*(vu32 *)0x23FFFE08 = fb[2];
 
-	// Fake a firmlaunch
-	//sendFakePsResponse();
+	_memcpy((void *)0x1FFF4B40, arm11Hook, arm11HookSize);
+	*(vu32 *)0x1FFF4018 = 0xEA0002CE; // Point the ARM11 IRQ vector to our code
+	while(PXIReceiveByte() != 0xCC);
+	PXISendByte(0xDD);
+
 	doFirmlaunch();
 }
