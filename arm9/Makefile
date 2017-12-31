@@ -19,8 +19,7 @@ dir_out := ../$(dir_build)
 
 ASFLAGS := -mcpu=arm946e-s -march=armv5te -mlittle-endian
 CFLAGS  := -Wall -Wextra -MMD -MP -marm $(ASFLAGS) -fno-builtin -std=c11 -Wno-main -Os -g -flto -ffast-math
-LDFLAGS := -nostdlib
-OCFLAGS := --set-section-flags .bss=alloc,load,contents
+LDFLAGS := -nostartfiles -Wl,--nmagic
 
 objects = $(patsubst $(dir_source)/%.s, $(dir_build)/%.o, \
           $(patsubst $(dir_source)/%.c, $(dir_build)/%.o, \
@@ -34,9 +33,10 @@ clean:
 	@rm -rf $(dir_build)
 
 $(dir_out)/$(name).bin: $(dir_build)/$(name).elf
-	$(OC) $(OCFLAGS) -S -O binary $< $@
+	$(OC) -S -O binary $< $@
 
 $(dir_build)/$(name).elf: $(objects)
+	@mkdir -p "$(@D)"
 	$(CC) $(LDFLAGS) -T linker.ld $(OUTPUT_OPTION) $^
 
 $(dir_build)/%.o: $(dir_source)/%.c

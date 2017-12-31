@@ -69,7 +69,7 @@ Result srv_getServiceHandle(Handle* handleptr, Handle* out, char* server)
 	return (Result)cmdbuf[1];
 }
 
-Result PS_VerifyRsaSha256(Handle *handle, u32 *fb)
+Result PS_VerifyRsaSha256(Handle *handle)
 {
 	Result ret = 0;
 	u32 *cmdbuf = getThreadCommandBuffer();
@@ -96,14 +96,6 @@ Result PS_VerifyRsaSha256(Handle *handle, u32 *fb)
 
 	for(u32 i = 0; i < size; i+=4)
 	{
-		if(*src == 0xDEADBABE)
-		{
-			*ptr++ = *fb++;
-			*ptr++ = *fb++;
-			*ptr++ = *fb++;
-			src += 3;
-		}
-		else
 			*ptr++ = *src++;
 	}
 

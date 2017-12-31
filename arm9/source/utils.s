@@ -36,7 +36,7 @@ finalJump:
 	ldr r0, =0x42078	@ alt vector select, enable itcm
 	mcr p15, 0, r0, c1, c0, 0
 
-	ldr r2, =#0x23f00000
+	ldr r2, =#0x23F00000
 	bx r2
 
 .global fb

@@ -26,6 +26,6 @@ Result srv_RegisterClient(Handle* handleptr);
 
 Result srv_getServiceHandle(Handle* handleptr, Handle* out, char* server);
 
-Result PS_VerifyRsaSha256(Handle *handle, u32 *fb); //Exploit
+Result PS_VerifyRsaSha256(Handle *handle); //Exploit
 
 extern u32 *work_buffer;

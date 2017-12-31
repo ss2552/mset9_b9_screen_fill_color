@@ -23,55 +23,9 @@ void main(void)
 {
 	svc_sleepThread(1000000);
 
-	// Get framebuffer addresses
-	uint32_t regs[8];
-
-	//FIXME where do these reg addresses come from?
-	_GSPGPU_ReadHWRegs(gspHandle, 0x400468, &regs[0], 8); // framebuffer 1 top left & framebuffer 2 top left
-	_GSPGPU_ReadHWRegs(gspHandle, 0x400494, &regs[2], 8); // framebuffer 1 top right & framebuffer 2 top right
-	_GSPGPU_ReadHWRegs(gspHandle, 0x400568, &regs[4], 8); // framebuffer 1 bottom & framebuffer 2 bottom
-	_GSPGPU_ReadHWRegs(gspHandle, 0x400478, &regs[6], 4); // framebuffer select top
-	_GSPGPU_ReadHWRegs(gspHandle, 0x400578, &regs[7], 4); // framebuffer select bottom
-
 	//patch gsp event handler addr to kill gsp thread ASAP, PA 0x267CF418
 	*((u32*)(0x003F8418+0x10+4*0x4))=0x002CA520; //svc 0x9 addr
 	svc_sleepThread(1000000);
-
-	// Read the main payload to 0x17F00000(0x23F00000 pa)
-	u32* buffer = (work_buffer + 0x10000/sizeof(u32));
-
-	IFILE file;
-	unsigned int readBytes;
-	_memset(&file, 0, sizeof(file));
-	IFile_Open(&file, L"dmc:/arm9.bin", 1);
-
-	const uint32_t block_size = 0x10000;
-	for(u32 i = 0; i < 0x20000u; i += block_size)
-	{
-		IFile_Read(&file, &readBytes, (void*)buffer, block_size);
-		GSPGPU_FlushDataCache(buffer, block_size);
-		GX_SetTextureCopy(buffer, (void *)(0x17F00000 + i), block_size, 0, 0, 0, 0, 8);
-		if(readBytes != block_size)
-			break;
-	}
-
-	u32 fb[3] = {0};
-
-	if(regs[6])
-	{
-		fb[0] = regs[0];
-	 	fb[1] = regs[2];
-	}
-	else
-	{
-		fb[0] = regs[1];
-		fb[1] = regs[3];
-	}
-
-	if(regs[7])
-		fb[2] = regs[4];
-	else
-		fb[2] = regs[5];
 
 	// Grab access to PS
 	Handle port;
@@ -90,7 +44,7 @@ void main(void)
 	srv_getServiceHandle(&port, &ps_handle, "ps:ps");
 
 	// Perform the exploit
-	PS_VerifyRsaSha256(&ps_handle, fb);
+	PS_VerifyRsaSha256(&ps_handle);
 
 	while(1);
 }

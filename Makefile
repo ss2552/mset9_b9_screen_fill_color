@@ -15,6 +15,7 @@ OC := arm-none-eabi-objcopy
 dir_source := source
 dir_arm9 := arm9
 dir_arm11_hook := arm11_hook
+dir_arm11_firmlaunch_stub := arm11_firmlaunch_stub
 dir_build := build
 dir_out := bin
 
@@ -33,27 +34,38 @@ all: bin/arm11.bin
 .PHONY: clean
 clean:
 	@$(MAKE) -C $(dir_arm11_hook) clean
+	@$(MAKE) -C $(dir_arm11_firmlaunch_stub) clean
 	@$(MAKE) -C $(dir_arm9) clean
 	@rm -rf $(dir_out) $(dir_build)
 
+.PHONY: $(dir_arm9)
+.PHONY: $(dir_arm11_hook)
+.PHONY: $(dir_arm11_firmlaunch_stub)
+
 .PRECIOUS: $(dir_build)/%.bin
 
-$(dir_out) $(dir_build):
-	@mkdir -p "$@"
-
-$(dir_out)/arm11.bin: $(dir_build)/main.bin $(dir_out)
+$(dir_out)/arm11.bin: $(dir_build)/main.bin
+	@mkdir -p "$(@D)"
 	@cp -a $(dir_build)/main.bin $@
 
 $(dir_build)/main.bin: $(dir_build)/main.elf
+	@mkdir -p "$(@D)"
 	$(OC) -S -O binary $< $@
 
 $(dir_build)/main.elf: $(bundled) $(objects)
+	@mkdir -p "$(@D)"
 	$(LINK.o) -T linker.ld $(OUTPUT_OPTION) $^
 
-$(dir_build)/arm11_hook.bin: $(dir_arm11_hook) $(dir_build)
+$(dir_build)/arm11_hook.bin: $(dir_arm11_hook)
+	@mkdir -p "$(@D)"
 	@$(MAKE) -C $<
 
-$(dir_build)/arm9.bin: $(dir_arm9) $(dir_build)/arm11_hook.bin $(dir_build)
+$(dir_build)/arm11_firmlaunch_stub.bin: $(dir_arm11_firmlaunch_stub)
+	@mkdir -p "$(@D)"
+	@$(MAKE) -C $<
+
+$(dir_build)/arm9.bin: $(dir_arm9) $(dir_build)/arm11_hook.bin $(dir_build)/arm11_firmlaunch_stub.bin
+	@mkdir -p "$(@D)"
 	@$(MAKE) -C $<
 
 $(dir_build)/lib.o: CFLAGS += -O3

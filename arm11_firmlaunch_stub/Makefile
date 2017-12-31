@@ -11,7 +11,7 @@ AS := arm-none-eabi-as
 LD := arm-none-eabi-ld
 OC := arm-none-eabi-objcopy
 
-name := arm11_hook
+name := arm11_firmlaunch_stub
 
 dir_source := source
 dir_build := build
@@ -36,6 +36,7 @@ $(dir_out)/$(name).bin: $(dir_build)/$(name).elf
 	$(OC) -S -O binary $< $@
 
 $(dir_build)/$(name).elf: $(objects)
+	@mkdir -p "$(@D)"
 	$(CC) $(LDFLAGS) -T linker.ld $(OUTPUT_OPTION) $^
 
 $(dir_build)/%.o: $(dir_source)/%.c
