@@ -4,28 +4,28 @@
 
 .global _start
 _start:
-	nop
-	mov r0, pc
-	svc 0x7b
-	nop
+    nop
+    mov r0, pc
+    svc 0x7b
+    nop
 
-	@ Disable interrupts
-	msr cpsr_cx, #0xD3
+    @ Disable interrupts
+    msr cpsr_cx, #0xD3
 
-	ldr sp, =0x080c0000
+    ldr sp, =0x080c0000
     bl flushCaches
 
-	@ Disable caches / MPU
-	mrc p15, 0, r0, c1, c0, 0  @ read control register
-	bic r0, #(1<<12)		   @ - instruction cache disable
-	bic r0, #(1<<2)			@ - data cache disable
-	bic r0, #(1<<0)			@ - mpu disable
-	mcr p15, 0, r0, c1, c0, 0  @ write control register
+    @ Disable caches / MPU
+    mrc p15, 0, r0, c1, c0, 0  @ read control register
+    bic r0, #(1<<12)		   @ - instruction cache disable
+    bic r0, #(1<<2)			@ - data cache disable
+    bic r0, #(1<<0)			@ - mpu disable
+    mcr p15, 0, r0, c1, c0, 0  @ write control register
 
 
     @ Invalidate both caches, discarding any data they may contain,
     @ then drain the write buffer
-	@mov r4, #0
+    @mov r4, #0
     @mcr p15, 0, r4, c7, c5, 0
     @mcr p15, 0, r4, c7, c6, 0
     @mcr p15, 0, r4, c7, c10, 4
@@ -71,4 +71,13 @@ _start:
     orr r0, r0, #(1<<0)        @ - MPU enable
     mcr p15, 0, r0, c1, c0, 0  @ write control register
 
-	b main
+    blx main
+
+    bl flushCaches
+
+    @ Disable MPU
+    ldr r0, =0x42078	@ alt vector select, enable itcm
+    mcr p15, 0, r0, c1, c0, 0
+
+    ldr r2, =#0x23F00000
+    bx r2
