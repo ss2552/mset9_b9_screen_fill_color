@@ -4,15 +4,21 @@
 
 .global _start
 _start:
-	nop
 	mov r0, pc
 	svc 0x7b
 	nop
 
-	@ Disable interrupts
+	@ Disable interrupts ASAP
 	mrs r0, cpsr
 	orr r0, #0x1c0	@ Disable IRQ/FIQ/Imprecise aborts
 	msr cpsr_cx, r0
+
+	@ Clean and invalidate the data cache, invalidate the instruction cache, drain the write buffer
+	mov r4, #0
+	ldr r12, =0xFFFF0830
+	blx r12
+	mcr p15, 0, r4, c7, c5, 0
+	mcr p15, 0, r4, c7, c10, 4
 
 	@ Disable caches / MPU
 	mrc p15, 0, r0, c1, c0, 0  @ read control register
@@ -20,9 +26,6 @@ _start:
 	bic r0, #(1<<2)			@ - data cache disable
 	bic r0, #(1<<0)			@ - mpu disable
 	mcr p15, 0, r0, c1, c0, 0  @ write control register
-
-	@ Flush caches
-	bl flushCaches
 
 	@ Give read/write access to all the memory regions
 	ldr r0, =0x3333333
@@ -51,6 +54,16 @@ _start:
 	mcr p15, 0, r8, c2, c0, 0   @ Data cacheable 0, 2
 	mcr p15, 0, r8, c2, c0, 1   @ Inst cacheable 0, 2
 
+	@ Relocate ourselves
+	adr r0, _start
+	ldr r1, =__start__
+	ldr r2, =__end__
+	_relocate_loop:
+		ldmia r0!, {r3-r10}
+		stmia r1!, {r3-r10}
+		cmp r1, r2
+		blo _relocate_loop
+
 	@ Enable caches / MPU / ITCM
 	mrc p15, 0, r0, c1, c0, 0  @ read control register
 	orr r0, r0, #(1<<18)	   @ - ITCM enable
@@ -60,4 +73,5 @@ _start:
 	orr r0, r0, #(1<<0)		@ - mpu enable
 	mcr p15, 0, r0, c1, c0, 0  @ write control register
 
-	b main
+	ldr r12, =main
+	bx r12
