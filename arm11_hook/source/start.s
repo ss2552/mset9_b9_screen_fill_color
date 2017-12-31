@@ -30,4 +30,6 @@ _arm11Hook:
 	ldr pc, =0xFFF68144 @ 2.1 specific
 
 	_allHooked:
+	mrc p15, 0, r0, c0, c0, 5 @ get core id
+	and r0, #0x3
 	b syncWithArm9AndDoFirmlaunch

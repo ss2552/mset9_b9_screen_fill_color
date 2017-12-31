@@ -31,7 +31,6 @@ static void resetDSPAndSharedWRAMConfig(void)
 
 static void doFirmlaunch(void)
 {
-
 	while(PXIReceiveWord() != 0x44836);
 	PXISendWord(0x964536);
 	while(PXIReceiveWord() != 0x44837);
@@ -40,7 +39,15 @@ static void doFirmlaunch(void)
 	resetDSPAndSharedWRAMConfig();
 	while(PXIReceiveWord() != 0x44846);
 
+	*(vu32 *)0x1FFFFFFC = 0x23F00000;
+	while(1);
 	finalJump();
+}
+
+void test(void)
+{
+	*(vu32 *)0x10202204 = 0x1FFFFFF;
+	while(1);
 }
 
 void main(void)
@@ -50,8 +57,7 @@ void main(void)
 	*(vu32 *)0x23FFFE08 = fb[2];
 
 	_memcpy((void *)0x1FFF4B40, arm11Hook, arm11HookSize);
+	_memcpy((void *)0x23F00000, (void *)test, 0x40);
 	*(vu32 *)0x1FFF4018 = 0xEA0002CE; // Point the ARM11 IRQ vector to our code
-	while(PXIReceiveByte() != 0xCC);
-	PXISendByte(0xDD);
 	doFirmlaunch();
 }
