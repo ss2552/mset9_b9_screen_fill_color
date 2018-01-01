@@ -20,9 +20,8 @@ dir_build := build
 dir_out := bin
 
 ASFLAGS := -mcpu=mpcore -mlittle-endian
-CFLAGS := -Wall -Wextra -MMD -MP -marm $(ASFLAGS) -fno-builtin -fshort-wchar -std=c11 -Wno-main -Os -g -flto -ffast-math
-LDFLAGS := -nostartfiles
-OCFLAGS := --set-section-flags .bss=alloc,load,contents
+CFLAGS := -Wall -Wextra -MMD -MP -marm $(ASFLAGS) -fno-builtin -std=c11 -Wno-main -Os -g -fPIC -flto -ffast-math -ffunction-sections -fdata-sections
+LDFLAGS := -nostartfiles -Wl,--nmagic,--gc-sections
 
 objects = $(patsubst $(dir_source)/%.s, $(dir_build)/%.o, \
           $(patsubst $(dir_source)/%.c, $(dir_build)/%.o, \
@@ -74,7 +73,7 @@ $(dir_build)/%.o: $(dir_source)/%.c $(dir_build)/arm9.bin
 	@mkdir -p "$(@D)"
 	$(COMPILE.c) $(OUTPUT_OPTION) $<
 
-$(dir_build)/%.o: $(dir_source)/%.s
+$(dir_build)/%.o: $(dir_source)/%.s $(dir_build)/arm9.bin
 	@mkdir -p "$(@D)"
 	$(COMPILE.s) $(OUTPUT_OPTION) $<
 include $(call rwildcard, $(dir_build), *.d)

@@ -1,6 +1,5 @@
 #include "types.h"
 #include "PXI.h"
-#include "memory.h"
 #include "arm11.h"
 #include "petitfs/pff.h"
 
