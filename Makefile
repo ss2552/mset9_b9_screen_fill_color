@@ -20,7 +20,7 @@ dir_build := build
 dir_out := bin
 
 ASFLAGS := -mcpu=mpcore -mlittle-endian
-CFLAGS := -Wall -Wextra -MMD -MP -marm $(ASFLAGS) -fno-builtin -std=c11 -Wno-main -Os -g -fPIC -flto -ffast-math -ffunction-sections -fdata-sections
+CFLAGS := -Wall -Wextra -MMD -MP -marm -mword-relocations $(ASFLAGS) -fno-builtin -std=c11 -Wno-main -Os -g -fPIC -ffast-math -ffunction-sections -fdata-sections
 LDFLAGS := -nostartfiles -Wl,--nmagic,--gc-sections
 
 objects = $(patsubst $(dir_source)/%.s, $(dir_build)/%.o, \
@@ -66,8 +66,6 @@ $(dir_build)/arm11_firmlaunch_stub.bin: $(dir_arm11_firmlaunch_stub)
 $(dir_build)/arm9.bin: $(dir_arm9) $(dir_build)/arm11_hook.bin $(dir_build)/arm11_firmlaunch_stub.bin
 	@mkdir -p "$(@D)"
 	@$(MAKE) -C $<
-
-$(dir_build)/lib.o: CFLAGS += -O3
 
 $(dir_build)/%.o: $(dir_source)/%.c $(dir_build)/arm9.bin
 	@mkdir -p "$(@D)"

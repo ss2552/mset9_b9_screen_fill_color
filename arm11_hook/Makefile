@@ -18,7 +18,7 @@ dir_build := build
 dir_out := ../$(dir_build)
 
 ASFLAGS := -mcpu=mpcore -mlittle-endian
-CFLAGS  := -Wall -Wextra -MMD -MP -marm $(ASFLAGS) -fno-builtin -std=c11 -Wno-main -Os -g -flto -ffast-math
+CFLAGS  := -Wall -Wextra -MMD -MP -marm $(ASFLAGS) -fno-builtin -std=c11 -Wno-main -Os -flto -g -ffast-math
 LDFLAGS := -nostartfiles -Wl,--nmagic
 
 objects = $(patsubst $(dir_source)/%.s, $(dir_build)/%.o, \

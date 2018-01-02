@@ -3,9 +3,9 @@
 #include "arm11.h"
 #include "petitfs/pff.h"
 
-#define CFG11_SHAREDWRAM_32K_DATA(i)	(*(vu8 *)(0x10140000 + i))
-#define CFG11_SHAREDWRAM_32K_CODE(i)	(*(vu8 *)(0x10140008 + i))
-#define CFG11_DSP_CNT					(*(vu8 *)0x10141230)
+#define CFG11_SHAREDWRAM_32K_DATA(i)    (*(vu8 *)(0x10140000 + i))
+#define CFG11_SHAREDWRAM_32K_CODE(i)    (*(vu8 *)(0x10140008 + i))
+#define CFG11_DSP_CNT                   (*(vu8 *)0x10141230)
 
 struct fb {
      u8 *top_left;
@@ -86,7 +86,6 @@ static void doFirmlaunch(void)
     payloadRead = readPayload();
     while(PXIReceiveWord() != 0x44846);
 
-
     *(vu32 *)0x1FFFFFF8 = 0;
     memcpy((void *)0x1FFFF400, arm11FirmlaunchStub, arm11FirmlaunchStubSize);
     if(payloadRead)
@@ -102,6 +101,6 @@ void main(void)
 {
     memcpy((void *)0x23FFFE00, fbs, 2 * sizeof(struct fb));
     memcpy((void *)0x1FFF4C80, arm11Hook, arm11HookSize); // pretty much the same PA for all system versions
-    *(vu32 *)0x1FFF4018 = 0xEA00031E; // Point the ARM11 IRQ vector to our code
+    *(vu32 *)0x1FFF4018 = 0xEA000000 | ((0xC80 - (0x18 + 8)) >> 2); // Point the ARM11 IRQ vector to our code
     doFirmlaunch();
 }

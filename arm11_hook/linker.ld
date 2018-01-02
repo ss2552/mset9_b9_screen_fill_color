@@ -1,7 +1,7 @@
 ENTRY(_start)
 SECTIONS
 {
-    . = 0;
+    . = 0xFFFF0C80;
 
     .text       : ALIGN(4) { *(.text.start) *(.text*); . = ALIGN(4); }
     .rodata     : ALIGN(4) { *(.rodata*); . = ALIGN(4); }

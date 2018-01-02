@@ -49,21 +49,21 @@ typedef void (*voidfn)(void);
 
 /// Structure representing CPU registers
 typedef struct {
-	u32 r[13]; ///< r0-r12.
-	u32 sp;    ///< sp.
-	u32 lr;    ///< lr.
-	u32 pc;    ///< pc. May need to be adjusted.
-	u32 cpsr;  ///< cpsr.
+    u32 r[13]; ///< r0-r12.
+    u32 sp;    ///< sp.
+    u32 lr;    ///< lr.
+    u32 pc;    ///< pc. May need to be adjusted.
+    u32 cpsr;  ///< cpsr.
 } CpuRegisters;
 
 /// Structure representing FPU registers
 typedef struct {
-	union {
-		struct PACKED { double d[16]; }; ///< d0-d15.
-		float  s[32];                    ///< s0-s31.
-	};
-	u32 fpscr;        ///< fpscr.
-	u32 fpexc;        ///< fpexc.
+    union {
+        struct PACKED { double d[16]; }; ///< d0-d15.
+        float  s[32];                    ///< s0-s31.
+    };
+    u32 fpscr;        ///< fpscr.
+    u32 fpexc;        ///< fpexc.
 } FpuRegisters;
 
 #define memcpy  __builtin_memcpy
@@ -71,4 +71,3 @@ typedef struct {
 #define strlen  __builtin_strlen
 #define strcpy  __builtin_strcpy
 #define strncpy __builtin_strncpy
-

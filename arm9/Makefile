@@ -18,8 +18,8 @@ dir_build := build
 dir_out := ../$(dir_build)
 
 ASFLAGS := -mcpu=arm946e-s -march=armv5te -mlittle-endian
-CFLAGS  := -Wall -Wextra -MMD -MP -marm $(ASFLAGS) -fno-builtin -std=c11 -Wno-main -Os -g -flto -ffast-math
-LDFLAGS := -nostartfiles -Wl,--nmagic
+CFLAGS  := -Wall -Wextra -MMD -MP -marm $(ASFLAGS) -fno-builtin -std=c11 -Wno-main -Os -g -ffast-math -ffunction-sections -fdata-sections
+LDFLAGS := -nostartfiles -Wl,--nmagic,--gc-sections
 
 objects = $(patsubst $(dir_source)/%.s, $(dir_build)/%.o, \
           $(patsubst $(dir_source)/%.c, $(dir_build)/%.o, \
@@ -46,7 +46,5 @@ $(dir_build)/%.o: $(dir_source)/%.c
 $(dir_build)/%.o: $(dir_source)/%.s
 	@mkdir -p "$(@D)"
 	$(COMPILE.s) $(OUTPUT_OPTION) $<
-
-$(dir_build)/memory.o: CFLAGS += -O3
 
 include $(call rwildcard, $(dir_build), *.d)

@@ -1,13 +1,17 @@
 #include "types.h"
 
-// 2.1 specific addresses/stuff here:
-///////////////////////////////////////////////////////
-// irq handler in start.s
-#define firmlaunch ((void (*)(void))0xFFF60000)
+typedef struct VersionInfo {
+    void (*firmlaunch)(void);
+    u32 lcdBase;
+    u32 mpcoreBase;
+    u32 mask;
+} VersionInfo;
 
-#define LCD_REGS_BASE           0xFFFD6000
-#define MPCORE_REGS_BASE        0xFFFEE000
-#define BITMASK                 0xFF00 // assuming two cores
+///////////////////////////////////////////////////////
+#define firmlaunch (info->firmlaunch)
+#define LCD_REGS_BASE           (info->lcdBase)
+#define MPCORE_REGS_BASE        (info->mpcoreBase)
+#define BITMASK                 (info->mask)
 ///////////////////////////////////////////////////////
 
 #define LCD_TOP_FILL_REG        *(vu32 *)(LCD_REGS_BASE + 0x200 + 4)
@@ -17,14 +21,14 @@
 #define MPCORE_GID_REGS_BASE    (MPCORE_REGS_BASE + 0x1000)
 #define MPCORE_GID_SGI          (*(vu32 *)(MPCORE_GID_REGS_BASE + 0xF00))
 
-bool signalCoreHooked(u32 coreId)
+bool signalCoreHooked(u32 coreId, VersionInfo *info)
 {
     u32 mask = BITMASK;
     LCD_TOP_FILL_REG |= LCD_FILL_ENABLE | (0xF << (8 + 4 * coreId));
     return (LCD_TOP_FILL_REG & mask) == mask; // expect green if 2 cores are present
 }
 
-void syncWithArm9AndDoFirmlaunch(u32 coreId)
+void syncWithArm9AndDoFirmlaunch(u32 coreId, VersionInfo *info)
 {
     u32 mask = BITMASK;
     LCD_BOTTOM_FILL_REG |= LCD_FILL_ENABLE | (0xF << (8 + 4 * coreId));

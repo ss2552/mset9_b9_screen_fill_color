@@ -1,7 +1,7 @@
 .section .rodata
 .arm
 
-.align 4
+.align 5
 .global arm11Hook
 arm11Hook: .incbin "../build/arm11_hook.bin"
 arm11HookEnd:
