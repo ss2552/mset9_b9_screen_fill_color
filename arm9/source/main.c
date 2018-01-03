@@ -83,8 +83,9 @@ static void doFirmlaunch(void)
     PXIReceiveWord(); // Low FIRM titleID
     resetDSPAndSharedWRAMConfig();
 
-    payloadRead = readPayload();
     while(PXIReceiveWord() != 0x44846);
+
+    payloadRead = readPayload();
 
     *(vu32 *)0x1FFFFFF8 = 0;
     memcpy((void *)0x1FFFF400, arm11FirmlaunchStub, arm11FirmlaunchStubSize);
@@ -97,10 +98,28 @@ static void doFirmlaunch(void)
     }
 }
 
+static void patchSvcReplyAndReceive11(void)
+{
+    /*
+       Basically, we're patching svc 0x4F's contents to svcKernelSetState(0, (u64)<dontcare>).
+       Assumption: kernel .text is in the same 64KB as the first SVCs.
+    */
+    u32 *off, *svcTable;
+
+    for(off = (u32 *)0x1FF80000; off[0] != 0xF96D0513 || off[1] != 0xE94D6F00; off++);
+    for(; *off != 0; off++);
+    svcTable = off;
+
+    u32 baseAddr = svcTable[1] & ~0xFFFF;
+    u32 *patch = (u32 *)(0x1FF80000 + svcTable[0x4F] - baseAddr);
+    patch[0] = 0xE3A00000;
+    patch[1] = 0xE51FF004;
+    patch[2] = svcTable[0x7C];;
+}
+
 void main(void)
 {
     memcpy((void *)0x23FFFE00, fbs, 2 * sizeof(struct fb));
-    memcpy((void *)0x1FFF4C80, arm11Hook, arm11HookSize); // pretty much the same PA for all system versions
-    *(vu32 *)0x1FFF4018 = 0xEA000000 | ((0xC80 - (0x18 + 8)) >> 2); // Point the ARM11 IRQ vector to our code
+    patchSvcReplyAndReceive11();
     doFirmlaunch();
 }

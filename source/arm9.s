@@ -1,4 +1,4 @@
-.section .rodata
+.section .rodata.arm9Payload, "a", %progbits
 .align 4
 
 arm9Payload: .incbin "build/arm9.bin"
@@ -6,7 +6,7 @@ arm9PayloadEnd:
 
 .align 4
 
-.section .text
+.section .text.getArm9Payload, "ax", %progbits
 .arm
 .align 2
 .global getArm9Payload

@@ -14,13 +14,12 @@ OC := arm-none-eabi-objcopy
 
 dir_source := source
 dir_arm9 := arm9
-dir_arm11_hook := arm11_hook
 dir_arm11_firmlaunch_stub := arm11_firmlaunch_stub
 dir_build := build
 dir_out := bin
 
 ASFLAGS := -mcpu=mpcore -mlittle-endian
-CFLAGS := -Wall -Wextra -MMD -MP -marm -mword-relocations $(ASFLAGS) -fno-builtin -std=c11 -Wno-main -Os -g -fPIC -ffast-math -ffunction-sections -fdata-sections
+CFLAGS := -Wall -Wextra -MMD -MP -marm -mword-relocations $(ASFLAGS) -fno-builtin -std=c11 -Wno-main -Os -g -flto -fPIC -ffast-math -ffunction-sections -fdata-sections
 LDFLAGS := -nostartfiles -Wl,--nmagic,--gc-sections
 
 objects = $(patsubst $(dir_source)/%.s, $(dir_build)/%.o, \
@@ -32,13 +31,11 @@ all: bin/arm11.bin
 
 .PHONY: clean
 clean:
-	@$(MAKE) -C $(dir_arm11_hook) clean
 	@$(MAKE) -C $(dir_arm11_firmlaunch_stub) clean
 	@$(MAKE) -C $(dir_arm9) clean
 	@rm -rf $(dir_out) $(dir_build)
 
 .PHONY: $(dir_arm9)
-.PHONY: $(dir_arm11_hook)
 .PHONY: $(dir_arm11_firmlaunch_stub)
 
 .PRECIOUS: $(dir_build)/%.bin
@@ -63,7 +60,7 @@ $(dir_build)/arm11_firmlaunch_stub.bin: $(dir_arm11_firmlaunch_stub)
 	@mkdir -p "$(@D)"
 	@$(MAKE) -C $<
 
-$(dir_build)/arm9.bin: $(dir_arm9) $(dir_build)/arm11_hook.bin $(dir_build)/arm11_firmlaunch_stub.bin
+$(dir_build)/arm9.bin: $(dir_arm9) $(dir_build)/arm11_firmlaunch_stub.bin
 	@mkdir -p "$(@D)"
 	@$(MAKE) -C $<
 

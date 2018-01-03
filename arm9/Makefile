@@ -18,7 +18,7 @@ dir_build := build
 dir_out := ../$(dir_build)
 
 ASFLAGS := -mcpu=arm946e-s -march=armv5te -mlittle-endian
-CFLAGS  := -Wall -Wextra -MMD -MP -marm $(ASFLAGS) -fno-builtin -std=c11 -Wno-main -Os -g -ffast-math -ffunction-sections -fdata-sections
+CFLAGS  := -Wall -Wextra -MMD -MP -marm $(ASFLAGS) -fno-builtin -std=c11 -Wno-main -Os -g -flto -ffast-math -ffunction-sections -fdata-sections
 LDFLAGS := -nostartfiles -Wl,--nmagic,--gc-sections
 
 objects = $(patsubst $(dir_source)/%.s, $(dir_build)/%.o, \
