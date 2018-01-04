@@ -4,12 +4,23 @@
 
 .global _start
 _start:
+.thumb
+    @ Switch to ARM mode. The following instructions assemble to a valid ARM instruction with no side effect (andeq r4, r0, r8, ror r7)
+    bx pc
+    movs r0, r0
+.arm
+    @ Elevate privileges if needed
+    mrs r1, cpsr
+    tst r1, #0xF
     mov r0, pc
-    svc 0x7b
+    svceq 0x7B
     nop
 
     @ Disable interrupts ASAP, clear flags
     msr cpsr_cxsf, 0xD3
+
+    @ Change the stack pointer
+    mov sp, #0x08100000
 
     @ Clean and invalidate the data cache, invalidate the instruction cache, drain the write buffer
     mov r4, #0
