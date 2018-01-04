@@ -8,10 +8,8 @@ _start:
     svc 0x7b
     nop
 
-    @ Disable interrupts ASAP
-    mrs r0, cpsr
-    orr r0, #0x1c0	@ Disable IRQ/FIQ/Imprecise aborts
-    msr cpsr_cx, r0
+    @ Disable interrupts ASAP, clear flags
+    msr cpsr_cxsf, 0xD3
 
     @ Clean and invalidate the data cache, invalidate the instruction cache, drain the write buffer
     mov r4, #0
@@ -21,11 +19,11 @@ _start:
     mcr p15, 0, r4, c7, c10, 4
 
     @ Disable caches / MPU
-    mrc p15, 0, r0, c1, c0, 0  @ read control register
-    bic r0, #(1<<12)		   @ - instruction cache disable
-    bic r0, #(1<<2)			@ - data cache disable
-    bic r0, #(1<<0)			@ - mpu disable
-    mcr p15, 0, r0, c1, c0, 0  @ write control register
+    mrc p15, 0, r0, c1, c0, 0   @ read control register
+    bic r0, #(1<<12)            @ - instruction cache disable
+    bic r0, #(1<<2)             @ - data cache disable
+    bic r0, #(1<<0)             @ - mpu disable
+    mcr p15, 0, r0, c1, c0, 0   @ write control register
 
     @ Give read/write access to all the memory regions
     ldr r0, =0x3333333
@@ -65,21 +63,23 @@ _start:
         blo _relocate_loop
 
     @ Enable caches / MPU / ITCM
-    mrc p15, 0, r0, c1, c0, 0  @ read control register
-    orr r0, r0, #(1<<18)	   @ - ITCM enable
-    orr r0, r0, #(1<<13)	   @ - alternate exception vectors enable
-    orr r0, r0, #(1<<12)	   @ - instruction cache enable
-    orr r0, r0, #(1<<2)		@ - data cache enable
-    orr r0, r0, #(1<<0)		@ - mpu enable
-    mcr p15, 0, r0, c1, c0, 0  @ write control register
+    mrc p15, 0, r0, c1, c0, 0   @ read control register
+    orr r0, r0, #(1<<18)        @ - ITCM enable
+    orr r0, r0, #(1<<13)        @ - alternate exception vectors enable
+    orr r0, r0, #(1<<12)        @ - instruction cache enable
+    orr r0, r0, #(1<<2)         @ - data cache enable
+    orr r0, r0, #(1<<0)         @ - mpu enable
+    mcr p15, 0, r0, c1, c0, 0   @ write control register
 
+    ldr lr, =_finalJump
     ldr r12, =main
-    blx r12
+    bx r12
 
+_finalJump:
     bl flushCaches
 
     @ Disable MPU
-    ldr r0, =0x42078	@ alt vector select, enable itcm
+    ldr r0, =0x42078            @ alt vector select, enable itcm
     mcr p15, 0, r0, c1, c0, 0
 
     ldr r2, =#0x23F00000
