@@ -8,7 +8,7 @@ typedef volatile u32 vu32;
 #define HID_PAD                (*(vu32 *)0x10146000 ^ 0xFFF)
 
 #define LCD_TOP_FILL_REG        *(vu32 *)(LCD_REGS_BASE + 0x200 + 4)
-// #define LCD_BOTTOM_FILL_REG     *(vu32 *)(LCD_REGS_BASE + 0xA00 + 4)
+define LCD_BOTTOM_FILL_REG     *(vu32 *)(LCD_REGS_BASE + 0xA00 + 4)
 #define LCD_FILL_ENABLE         (1u << 24)
 
 #define BUTTON_R1              (1 << 8)
@@ -46,6 +46,7 @@ void main(){
 
     // fill black screen
     fill_screen(COLOR_BLACK);
+    LCD_BOTTOM_FILL_REG = LCD_FILL_ENABLE | COLOR_WHITE
     
 loop:
 
