@@ -46,7 +46,7 @@ void main(){
 
     // fill black screen
     fill_screen(COLOR_BLACK);
-    LCD_BOTTOM_FILL_REG = LCD_FILL_ENABLE | COLOR_WHITE
+    LCD_BOTTOM_FILL_REG = LCD_FILL_ENABLE | COLOR_WHITE;
     
 loop:
 
