@@ -1,7 +1,7 @@
 ENTRY(_start)
 SECTIONS
 {
-    . = 0x08006000;
+    . = 0x080a9300;
 
     __start__ = .;
     .text       : ALIGN(4) { *(.text.start) *(.text*); . = ALIGN(4); }
