@@ -1,7 +1,6 @@
 #include "types.h"
 #include "PXI.h"
 #include "arm11.h"
-#include "petitfs/pff.h"
 
 #define CFG11_SHAREDWRAM_32K_DATA(i)    (*(vu8 *)(0x10140000 + i))
 #define CFG11_SHAREDWRAM_32K_CODE(i)    (*(vu8 *)(0x10140008 + i))
@@ -16,14 +15,14 @@ struct fb {
 static const struct fb fbs[2] =
 {
     {
-        .top_left  = (u8 *)0x18300000,
-        .top_right = (u8 *)0x18300000,
-        .bottom    = (u8 *)0x18346500,
+        .top_left  = (u8 *)0x18000000,
+        .top_right = (u8 *)0x18000000,
+        .bottom    = (u8 *)0x18046500,
     },
     {
-        .top_left  = (u8 *)0x18400000,
-        .top_right = (u8 *)0x18400000,
-        .bottom    = (u8 *)0x18446500,
+        .top_left  = (u8 *)0x18000000,
+        .top_right = (u8 *)0x18000000,
+        .bottom    = (u8 *)0x18046500,
     },
 };
 
@@ -50,7 +49,7 @@ static void resetDSPAndSharedWRAMConfig(void)
 
 static void doFirmlaunch(void)
 {
-
+     
     while(PXIReceiveWord() != 0x44836);
     PXISendWord(0x964536);
     while(PXIReceiveWord() != 0x44837);
@@ -59,9 +58,10 @@ static void doFirmlaunch(void)
     resetDSPAndSharedWRAMConfig();
 
     while(PXIReceiveWord() != 0x44846);
-
+     
     *(vu32 *)0x1FFFFFF8 = 0;
-    memcpy((void *)0x1FFFF400, arm11FirmlaunchStub, arm11FirmlaunchStubSize);*(vu32 *)0x1FFFFFFC = 0x1FFFF400;
+    memcpy((void *)0x1FFFF400, arm11FirmlaunchStub, arm11FirmlaunchStubSize);
+     *(vu32 *)0x1FFFFFFC = 0x1FFFF400;
 }
 
 static void patchSvcReplyAndReceive11(void)
