@@ -4,5 +4,5 @@
 
 .global _start
 _start:
-    sub sp, pc, #4
+    mov sp, pc
     b main
