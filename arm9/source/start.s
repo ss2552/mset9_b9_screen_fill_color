@@ -82,16 +82,6 @@ _start:
     orr r0, r0, #(1<<0)         @ - mpu enable
     mcr p15, 0, r0, c1, c0, 0   @ write control register
 
-    ldr lr, =_finalJump
     ldr r12, =main
     bx r12
-
-_finalJump:
-    bl flushCaches
-
-    @ Disable MPU
-    ldr r0, =0x42078            @ alt vector select, enable itcm
-    mcr p15, 0, r0, c1, c0, 0
-
-    ldr r2, =#0x23F00000
-    bx r2
+    
