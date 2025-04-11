@@ -61,7 +61,8 @@ static void doFirmlaunch(void)
      
     *(vu32 *)0x1FFFFFF8 = 0;
     memcpy((void *)0x1FFFF400, arm11FirmlaunchStub, arm11FirmlaunchStubSize);
-     *(vu32 *)0x1FFFFFFC = 0x1FFFF400;
+    *(vu32 *)0x1FFFFFFC = 0x1FFFF400;
+    while(1);
 }
 
 static void patchSvcReplyAndReceive11(void)
