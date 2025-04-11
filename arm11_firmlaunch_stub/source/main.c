@@ -3,10 +3,6 @@ typedef volatile u32 vu32;
 
 #define AUTO_EXIT_COUNT 999999
 
-#define IS3DS 1
-
-#if IS3DS
-
 #define LCD_REGS_BASE           0x10202000
 
 #define HID_PAD                (*(vu32 *)0x10146000 ^ 0xFFF)
@@ -14,11 +10,6 @@ typedef volatile u32 vu32;
 #define LCD_TOP_FILL_REG        *(vu32 *)(LCD_REGS_BASE + 0x200 + 4)
 // #define LCD_BOTTOM_FILL_REG     *(vu32 *)(LCD_REGS_BASE + 0xA00 + 4)
 #define LCD_FILL_ENABLE         (1u << 24)
-
-#else
-#include <stdio.h>
-#define HID_PAD 0x00000000
-#endif
 
 #define BUTTON_R1              (1 << 8)
 #define BUTTON_L1              (1 << 9)
@@ -44,12 +35,9 @@ typedef volatile u32 vu32;
 
 
 void fill_screen(u32 c){
-
-#if IS3DS
+    
     LCD_TOP_FILL_REG = LCD_FILL_ENABLE | c;
-#else
-    printf("%d\n", c);
-#endif
+    
 }
 
 void main(){
@@ -66,10 +54,6 @@ loop:
         while(n - 1000);
         
     }
-    
-#if !IS3DS
-    printf("i     : %d\nkey   : %i\n", n, HID_PAD);
-#endif
 
     switch(HID_PAD){
         case BUTTON_A:
