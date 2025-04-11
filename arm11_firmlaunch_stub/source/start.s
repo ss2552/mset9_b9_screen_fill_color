@@ -5,6 +5,3 @@
 .global _start
 _start:
     bl main
-    b _error
-_error:
-    b error
