@@ -27,30 +27,6 @@ static const struct fb fbs[2] =
     },
 };
 
-static FATFS sdFs;
-
-static bool mountFs(void)
-{
-    return pf_mount(&sdFs) == FR_OK;
-}
-
-static bool fileRead(void *dest, const char *path, u32 maxSize)
-{
-    FRESULT result = FR_OK;
-    u32 ret = 0;
-
-    if(pf_open(path) != FR_OK) return false;
-
-    result = pf_read(dest, maxSize, (unsigned int *)&ret);
-
-    return result == FR_OK && ret != 0;
-}
-
-static bool readPayload(void)
-{
-    return mountFs() && fileRead((void *)0x23F00000, "/arm9.bin", 0x100000);
-}
-
 static void resetDSPAndSharedWRAMConfig(void)
 {
     CFG11_DSP_CNT = 2; // PDN_DSP_CNT
@@ -74,7 +50,6 @@ static void resetDSPAndSharedWRAMConfig(void)
 
 static void doFirmlaunch(void)
 {
-    bool payloadRead;
 
     while(PXIReceiveWord() != 0x44836);
     PXISendWord(0x964536);
@@ -85,17 +60,8 @@ static void doFirmlaunch(void)
 
     while(PXIReceiveWord() != 0x44846);
 
-    payloadRead = readPayload();
-
     *(vu32 *)0x1FFFFFF8 = 0;
-    memcpy((void *)0x1FFFF400, arm11FirmlaunchStub, arm11FirmlaunchStubSize);
-    if(payloadRead)
-        *(vu32 *)0x1FFFFFFC = 0x1FFFF400;
-    else
-    {
-        *(vu32 *)0x1FFFFFFC = 0x1FFFF404; // fill the screens with red
-        while(true);
-    }
+    memcpy((void *)0x1FFFF400, arm11FirmlaunchStub, arm11FirmlaunchStubSize);*(vu32 *)0x1FFFFFFC = 0x1FFFF400;
 }
 
 static void patchSvcReplyAndReceive11(void)
